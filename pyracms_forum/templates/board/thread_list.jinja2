@@ -1,0 +1,21 @@
+{% extends "main.jinja2" %}
+{% block title %} - Forum - {{ forum.name }}{% endblock %}
+{% block content %}
+<div class="forum_container">
+    Forum: {{ forum.name }}
+    <p><a href="/board/create_thread/{{ forum.id }}">Create a thread</a></p>
+    {% for thread in forum.threads %}
+        <div class="thread_list">
+            <div class="thread_list_title">
+                <a href="/board/thread/{{ thread.id }}">{{ thread.name }}</a>
+            </div>
+            <div class="thread_list_post_count">
+                {{ thread.total_posts() }} Posts
+            </div>
+            <div class="thread_list_author">
+                Author: {{ thread.posts[0].user.name }}
+            </div>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}

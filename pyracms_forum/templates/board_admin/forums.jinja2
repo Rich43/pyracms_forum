@@ -1,0 +1,23 @@
+{% extends "main.jinja2" %}
+{% block title %} - List Forums{% endblock %}
+{% block content %}
+<h2>List Forums</h2>
+<p><form action="/redirect/add_forum" method="post">
+  Add a new forum: <input type="text" name="forum_id" />
+  <input type="hidden" name="category_id" value="{{ category_id }}">
+  <input type="submit" value="Submit" />
+</form></p>
+<table>
+    <tr>
+        <th>Forum Name</th>
+        <th>Actions</th>
+    </tr>
+    {% for forum in forums %}
+    <tr>
+        <td>{{ forum.name }}</td>
+        <td><a href="/userarea/edit_forum/{{ forum.id }}">Edit</a> | 
+            <a href="/userarea/delete_forum/{{ forum.id }}">Delete</a></td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

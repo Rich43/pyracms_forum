@@ -1,0 +1,22 @@
+{% extends "main.jinja2" %}
+{% block title %} - Forum{% endblock %}
+{% block content %}
+{% for category in categories %}
+    <div class="category_list">
+        {{ category.name }}
+        {% for forum in category.forums %}
+            <div class="forum_list">
+                <div class="forum_list_title">
+                    <a href="/board/forum/{{ forum.id }}">{{ forum.name }}</a>
+                </div>
+                <div class="forum_list_topic_count">
+                    {{ forum.total_threads() }} Topics
+                </div>
+                <div class="forum_list_post_count">
+                    {{ forum.total_posts() }} Posts
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endfor %}
+{% endblock %}
