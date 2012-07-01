@@ -14,7 +14,7 @@ def deferred_default_forum_name(node, kw):
     if forum:
         return forum.name
     else:
-        return u''
+        return ''
 
 @deferred
 def deferred_default_forum_description(node, kw):
@@ -22,9 +22,9 @@ def deferred_default_forum_description(node, kw):
     if forum:
         return forum.description
     else:
-        return u''
+        return ''
 
 class EditForum(Schema):
     name = SchemaNode(String(), default=deferred_default_forum_name)
-    description = SchemaNode(String(), 
+    description = SchemaNode(String(),
                              default=deferred_default_forum_description)
