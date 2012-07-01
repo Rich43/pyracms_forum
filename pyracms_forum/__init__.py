@@ -2,6 +2,7 @@ def includeme(config):
     """ Activate the forum; usually called via
     ``config.include('pyracms_forum')`` instead of being invoked
     directly. """
+    config.add_jinja2_search_path("pyracms_forum:templates")
     # Forum routes
     config.add_route('thread', '/board/thread/{threadid}')
     config.add_route('create_thread', '/board/create_thread/{forumid}')
