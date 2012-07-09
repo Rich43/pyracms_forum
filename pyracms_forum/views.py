@@ -235,8 +235,10 @@ def edit_forum_category(context, request):
         """
         groups = set([g.name for g in bind_params["groups"]])
         deserialized_groups = set(deserialized['forum_categories'])
-        map(bb.add_category, deserialized_groups - groups)
-        map(bb.delete_category, groups - deserialized_groups)
+        for item in deserialized_groups - groups:
+            bb.add_category(item)
+        for item in groups - deserialized_groups:
+            bb.delete_category(item)
         request.session.flash(INFO_FORUM_CATEGORY_UPDATED, INFO)
         return redirect(request, 'category_list')
     groups = bb.list_categories().all()
