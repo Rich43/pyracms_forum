@@ -1,8 +1,9 @@
 from ..models import DBSession, Base
 from pyracms.lib.userlib import UserLib
-from pyracms.models import RootFactory
+from pyracms.lib.menulib import MenuLib
+from pyracms.models import RootFactory, Menu
 from pyramid.paster import get_appsettings, setup_logging
-from pyramid.security import Allow
+from pyramid.security import Allow, Everyone
 from sqlalchemy import engine_from_config
 import os
 import sys
@@ -26,9 +27,11 @@ def main(argv=sys.argv):
     with transaction.manager:
         # Add Groups
         u = UserLib()
+        admin_user = u.show("admin")
         u.create_group("forum_moderator", "Ability to Edit " +
-                       "and Delete forum posts/threads.")
-        u.create_group("forum", "Ability to Add forum posts/threads.")
+                       "and Delete forum posts/threads.", [admin_user])
+        u.create_group("forum", "Ability to Add forum posts/threads.", 
+                       [admin_user])
     
         # Default ACL
         acl = RootFactory()
@@ -42,3 +45,14 @@ def main(argv=sys.argv):
         acl.__acl__.add((Allow, "group:forum_moderator", 'forum_mod_edit'))
         acl.__acl__.add((Allow, "group:forum_moderator", 'forum_mod_delete'))
         acl.sync_to_database()
+
+        # Add Menu Items
+        m = MenuLib()
+        DBSession.add(Menu("Forum", "/board/list", 6, 
+                           m.show_group("main_menu"), Everyone))
+        group = m.show_group("admin_area")
+        DBSession.add(Menu("Forum Categories", 
+                           "/board_admin/edit_forum_category", 8, group, 
+                           'edit_menu'))
+        DBSession.add(Menu("Edit Forums", "/board_admin/list_forum_category", 
+                           9, group, 'edit_menu'))
