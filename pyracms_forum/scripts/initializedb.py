@@ -48,11 +48,11 @@ def main(argv=sys.argv):
 
         # Add Menu Items
         m = MenuLib()
-        DBSession.add(Menu("Forum", "/board/list", 6, 
+        DBSession.add(Menu("Forum", "/board/list", 10, 
                            m.show_group("main_menu"), Everyone))
         group = m.show_group("admin_area")
         DBSession.add(Menu("Forum Categories", 
-                           "/board_admin/edit_forum_category", 8, group, 
+                           "/board_admin/edit_forum_category", 20, group, 
                            'edit_menu'))
         DBSession.add(Menu("Edit Forums", "/board_admin/list_forum_category", 
-                           9, group, 'edit_menu'))
+                           21, group, 'edit_menu'))
