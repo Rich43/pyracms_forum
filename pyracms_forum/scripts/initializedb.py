@@ -35,16 +35,15 @@ def main(argv=sys.argv):
     
         # Default ACL
         acl = RootFactory()
-        acl.__acl__.add((Allow, "group:admin", 'edit_board'))
-        acl.__acl__.add((Allow, "group:forum", "group:forum"))
-        acl.__acl__.add((Allow, "group:forum", 'forum_reply'))
-        acl.__acl__.add((Allow, "group:forum", 'forum_edit'))
-        acl.__acl__.add((Allow, "group:forum", 'forum_delete'))
-        acl.__acl__.add((Allow, "group:forum_moderator",
+        acl.__acl__.append((Allow, "group:admin", 'edit_board'))
+        acl.__acl__.append((Allow, "group:forum", "group:forum"))
+        acl.__acl__.append((Allow, "group:forum", 'forum_reply'))
+        acl.__acl__.append((Allow, "group:forum", 'forum_edit'))
+        acl.__acl__.append((Allow, "group:forum", 'forum_delete'))
+        acl.__acl__.append((Allow, "group:forum_moderator",
                          "group:forum_moderator"))
-        acl.__acl__.add((Allow, "group:forum_moderator", 'forum_mod_edit'))
-        acl.__acl__.add((Allow, "group:forum_moderator", 'forum_mod_delete'))
-        acl.sync_to_database()
+        acl.__acl__.append((Allow, "group:forum_moderator", 'forum_mod_edit'))
+        acl.__acl__.append((Allow, "group:forum_moderator", 'forum_mod_delete'))
 
         # Add Menu Items
         m = MenuLib()
