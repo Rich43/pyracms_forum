@@ -1,4 +1,5 @@
-from ..models import DBSession, BBCategory, BBForum, BBThread, BBPost
+from ..models import BBCategory, BBForum, BBThread, BBPost
+from pyracms.models import DBSession
 from sqlalchemy.orm.exc import NoResultFound
 
 class CategoryNotFound(Exception):

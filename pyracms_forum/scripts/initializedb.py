@@ -1,8 +1,7 @@
-from ..models import DBSession, Base
 from pyracms.factory import RootFactory
 from pyracms.lib.menulib import MenuLib
 from pyracms.lib.userlib import UserLib
-from pyracms.models import Menu
+from pyracms.models import DBSession, Base, Menu
 from pyramid.paster import get_appsettings, setup_logging
 from pyramid.security import Allow, Everyone
 from sqlalchemy import engine_from_config
@@ -35,7 +34,7 @@ def main(argv=sys.argv):
                        [admin_user])
     
         # Default ACL
-        acl = RootFactory()
+        acl = RootFactory(session=DBSession)
         acl.__acl__.append((Allow, "group:admin", 'edit_board'))
         acl.__acl__.append((Allow, "group:forum", "group:forum"))
         acl.__acl__.append((Allow, "group:forum", 'forum_reply'))

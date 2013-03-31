@@ -1,5 +1,5 @@
 from datetime import datetime
-from pyracms.models import Files, User, RootFactory, DBSession, Base #@UnusedImport
+from pyracms.models import Files, User, Base
 from sqlalchemy import Column, Integer, Unicode, DateTime, Boolean
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import ForeignKey, UniqueConstraint
