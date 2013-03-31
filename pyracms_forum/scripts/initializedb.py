@@ -1,3 +1,5 @@
+from ..models import BBCategory, BBForum, BBPost, BBVotes, BBTags #@UnusedImport
+from ..models import BBThread #@UnusedImport
 from pyracms.factory import RootFactory
 from pyracms.lib.menulib import MenuLib
 from pyracms.lib.userlib import UserLib
