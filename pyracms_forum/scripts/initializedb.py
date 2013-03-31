@@ -1,7 +1,8 @@
 from ..models import DBSession, Base
-from pyracms.lib.userlib import UserLib
+from pyracms.factory import RootFactory
 from pyracms.lib.menulib import MenuLib
-from pyracms.models import RootFactory, Menu
+from pyracms.lib.userlib import UserLib
+from pyracms.models import Menu
 from pyramid.paster import get_appsettings, setup_logging
 from pyramid.security import Allow, Everyone
 from sqlalchemy import engine_from_config
