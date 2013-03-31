@@ -4,11 +4,11 @@ A bulletin board, all non-admin views go in here.
 from .deform_schemas.board import QuickReplySchema, ThreadSchema, PostSchema
 from .deform_schemas.board_admin import ForumCategory, EditForum
 from .lib.boardlib import BoardLib
-from pyracms.errwarninfo import (INFO_FORUM_CATEGORY_UPDATED, INFO, 
-    INFO_ACL_UPDATED)
 from pyracms.lib.helperlib import (get_username, rapid_deform, redirect, 
     serialize_relation)
+from pyracms.lib.settingslib import SettingsLib
 from pyracms.lib.userlib import UserLib
+from pyracms.views import INFO
 from pyramid.httpexceptions import HTTPFound, HTTPForbidden
 from pyramid.security import has_permission
 from pyramid.url import route_url
@@ -16,6 +16,7 @@ from pyramid.view import view_config
 
 bb = BoardLib()
 u = UserLib()
+s = SettingsLib()
 
 @view_config(route_name='category_list', 
              renderer='board/category_list.jinja2')
@@ -164,7 +165,7 @@ def add_forum(context, request):
         category = bind_params.get("category")
         bb.add_forum(deserialized.get("name"), 
                      deserialized.get("description"), category)
-        request.session.flash(INFO_ACL_UPDATED, INFO)
+        request.session.flash(s.show_setting("INFO_ACL_UPDATED"), INFO)
         return redirect(request, 'list_forum', 
                         category_id=category.name)
     category = bb.get_category(request.matchdict.get('category_id'))
@@ -189,7 +190,7 @@ def edit_forum(context, request):
         forum = bind_params.get("forum")
         forum.name = deserialized.get("name")
         forum.description = deserialized.get("description")
-        request.session.flash(INFO_ACL_UPDATED, INFO)
+        request.session.flash(s.show_setting("INFO_ACL_UPDATED"), INFO)
         return redirect(request, 'list_forum', 
                         category_id=forum.category.name)
     forum = bb.get_forum(request.matchdict.get('forum_id'))
@@ -239,7 +240,8 @@ def edit_forum_category(context, request):
             bb.add_category(item)
         for item in groups - deserialized_groups:
             bb.delete_category(item)
-        request.session.flash(INFO_FORUM_CATEGORY_UPDATED, INFO)
+        request.session.flash(s.show_setting("INFO_FORUM_CATEGORY_UPDATED"), 
+                              INFO)
         return redirect(request, 'category_list')
     groups = bb.list_categories().all()
     appstruct = {'forum_categories': 
