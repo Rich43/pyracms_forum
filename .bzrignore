@@ -2,3 +2,5 @@
 .pydevproject
 pyracms_forum.egg-info
 pyracms.db
+output.txt
+whoosh_index

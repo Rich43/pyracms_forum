@@ -4,10 +4,10 @@ A bulletin board, all non-admin views go in here.
 from .deform_schemas.board import QuickReplySchema, ThreadSchema, PostSchema
 from .deform_schemas.board_admin import ForumCategory, EditForum
 from .lib.boardlib import BoardLib
+from .lib.bbuserlib import BBUserLib
 from pyracms.lib.helperlib import (get_username, rapid_deform, redirect, 
     serialize_relation)
 from pyracms.lib.settingslib import SettingsLib
-from pyracms.lib.userlib import UserLib
 from pyracms.views import INFO
 from pyramid.httpexceptions import HTTPFound, HTTPForbidden
 from pyramid.security import has_permission
@@ -15,7 +15,7 @@ from pyramid.url import route_url
 from pyramid.view import view_config
 
 bb = BoardLib()
-u = UserLib()
+u = BBUserLib()
 s = SettingsLib()
 
 @view_config(route_name='category_list', 
@@ -55,9 +55,9 @@ def get_thread(context, request, threadid=None):
             raise HTTPFound(location=request.path_qs)
         else:
             raise HTTPForbidden
+        
     result_dict = rapid_deform(context, request, QuickReplySchema, 
-                               get_thread_submit, True, 
-                               thread_name=thread.name,
+                               get_thread_submit, thread_name=thread.name,
                                threadid=threadid)
     result_dict.update({'thread': thread, 'user': user})
     if has_permission('forum_reply', context, request):

@@ -4,6 +4,18 @@ from sqlalchemy import Column, Integer, Unicode, DateTime, Boolean
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import ForeignKey, UniqueConstraint
 
+class BBUser(Base):
+    __tablename__ = 'bbuser'
+    __table_args__ = {'mysql_engine': 'InnoDB', 'mysql_charset': 'utf8'}
+
+    id = Column(Integer, primary_key=True)
+    postcount = Column(Integer, default=0, nullable=False)
+    signature = Column(Unicode(128), default='')
+    user_id = Column(Integer, ForeignKey('user.id'), nullable=False)
+    user = relationship(User)
+    thread_id = Column(Integer, ForeignKey('bbthread.id'), nullable=False)
+    thread = relationship("BBThread", cascade="all, delete")
+    
 class BBVotes(Base):
     __tablename__ = 'bbvotes'
     __table_args__ = (UniqueConstraint('user_id', 'post_id'),
@@ -12,8 +24,8 @@ class BBVotes(Base):
     id = Column(Integer, primary_key=True)
     post_id = Column(Integer, ForeignKey('bbpost.id'))
     post = relationship("BBPost")
-    user_id = Column(Integer, ForeignKey('user.id'), nullable=False)
-    user = relationship(User)
+    user_id = Column(Integer, ForeignKey('bbuser.id'), nullable=False)
+    user = relationship(BBUser)
     like = Column(Boolean, nullable=False, index=True)
 
     def __init__(self, user, like):
@@ -50,8 +62,8 @@ class BBPost(Base):
     name = Column(Unicode(128), index=True, nullable=False)
     article = Column(Unicode(16384), default='')
     time = Column(DateTime, default=datetime.utcnow)
-    user_id = Column(Integer, ForeignKey('user.id'), nullable=False)
-    user = relationship(User)
+    user_id = Column(Integer, ForeignKey('bbuser.id'), nullable=False)
+    user = relationship(BBUser)
     thread_id = Column(Integer, ForeignKey('bbthread.id'))
     thread = relationship("BBThread")
     file_id = Column(Integer, ForeignKey('files.id'))
