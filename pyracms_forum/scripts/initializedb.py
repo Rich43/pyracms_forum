@@ -3,6 +3,7 @@ from ..models import BBThread #@UnusedImport
 from pyracms.factory import RootFactory
 from pyracms.lib.menulib import MenuLib
 from pyracms.lib.userlib import UserLib
+from pyracms.lib.settingslib import SettingsLib
 from pyracms.models import DBSession, Base, Menu
 from pyramid.paster import get_appsettings, setup_logging
 from pyramid.security import Allow, Everyone
@@ -10,6 +11,71 @@ from sqlalchemy import engine_from_config
 import os
 import sys
 import transaction
+
+css = """
+.category_list, .post_list {
+    margin-bottom: 10px;
+}
+
+.forum_list {
+    text-indent: 20px;
+}
+
+.forum_list_title, .thread_list_title, .post_container {
+    width: 80%;
+    float: left;
+}
+
+.post_list_body {
+    min-height: 75px;
+}
+
+.forum_list_topic_count, .forum_list_post_count, .thread_list_post_count,
+.thread_list_author {
+    float: left;
+    width: 10%;
+}
+
+.post_user_container {
+    width: 20%;
+    float: left;
+}
+
+.post_list_title {
+    font-size: 12px;
+    font-weight: bold;
+    float: left;
+}
+
+.post_list_sig {
+    margin-top: 20px;
+    border-color: #000000;
+    border-top: solid;
+    border-top-width: 1px;
+    padding-top: 10px;
+}
+
+.post_mod_links {
+    width: 100%;
+    text-align: right
+}
+
+.quickreply {
+float: left;
+}
+
+.quickreply .req {
+display: none;
+}
+
+.quickreply_input {
+    text-align: center;
+}
+
+.quickreply_textarea {
+    width: 95%;
+}
+"""
 
 def usage(argv):
     cmd = os.path.basename(argv[0])
@@ -57,3 +123,7 @@ def main(argv=sys.argv):
                            'edit_menu'))
         DBSession.add(Menu("Edit Forums", "/board_admin/list_forum_category", 
                            21, group, 'edit_menu'))
+        
+        # Append CSS
+        s = SettingsLib()
+        s.update("CSS", s.show_setting("CSS").value + css)
