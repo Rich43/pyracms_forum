@@ -1,7 +1,6 @@
 from ..models import BBUser, BBThread
 from pyracms.models import DBSession, User
 from sqlalchemy.orm.exc import NoResultFound
-import transaction
 
 class BBUserNotFound(Exception):
     pass
@@ -17,7 +16,6 @@ class BBUserLib():
         It will automatically add a record if it does not exist.
         Raise BBUserNotFound if bbuser does not exist
         """
-        
         if not name:
             raise BBUserNotFound
         try:
@@ -30,9 +28,7 @@ class BBUserLib():
                 bb_thread = BBThread(user.name, "Profile Comments")
                 bb_user.user = user
                 bb_user.thread = bb_thread
-                DBSession.add(bb_thread)
                 DBSession.add(bb_user)
-                transaction.commit()
                 return self.show(name)
             return bb_user
         except NoResultFound:

@@ -85,7 +85,7 @@ class BoardLib():
         """
         post = BBPost(title, body, user)
         thread.posts.append(post)
-    
+        
     def add_thread(self, title, description, body, user, forum=None):
         """
         Add a thread, optionally to a forum.

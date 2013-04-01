@@ -3,8 +3,8 @@ A bulletin board, all non-admin views go in here.
 """
 from .deform_schemas.board import QuickReplySchema, ThreadSchema, PostSchema
 from .deform_schemas.board_admin import ForumCategory, EditForum
-from .lib.boardlib import BoardLib
 from .lib.bbuserlib import BBUserLib
+from .lib.boardlib import BoardLib
 from pyracms.lib.helperlib import (get_username, rapid_deform, redirect, 
     serialize_relation)
 from pyracms.lib.settingslib import SettingsLib
@@ -13,6 +13,7 @@ from pyramid.httpexceptions import HTTPFound, HTTPForbidden
 from pyramid.security import has_permission
 from pyramid.url import route_url
 from pyramid.view import view_config
+import transaction
 
 bb = BoardLib()
 u = BBUserLib()
@@ -52,6 +53,7 @@ def get_thread(context, request, threadid=None):
             body = deserialized.get('body')
             if not title == '' and not body == '':
                 bb.add_post(thread, title, body, user)
+                transaction.commit()
             raise HTTPFound(location=request.path_qs)
         else:
             raise HTTPForbidden
