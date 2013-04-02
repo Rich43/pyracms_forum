@@ -1,53 +1,5 @@
-{% from "widgets/vote_count.jinja2" import vote_count %}
 {% extends "main.jinja2" %}
 {% block title %} - Forum - {{ thread.name }}{% endblock %}
 {% block content %}
-<div class="thread_container">
-    Thread: {{ thread.name }}
-    {% for post in thread.posts %}
-        <div class="post_list">
-            <div class="post_user_container">
-                <a href="/userarea/profile/{{post.user.name}}">{{ post.user.user.full_name }}</a> <br />
-                Join Date: {{ w.format_date(post.user.user.created, request) }} <br />
-                Posts: {{ post.user.postcount }} <br />
-                <a href="/vote/post/thread/{{ thread.id }}/{{ post.id }}/True">+1</a> {{ vote_count(post, True) }}  
-                <a href="/vote/post/thread/{{ thread.id }}/{{ post.id }}/False">-1</a> {{ vote_count(post, False) }}
-            </div>
-            <div class="post_container">
-                <div class="post_list_title">
-                    <a name="post{{ post.id }}" href="#post{{ post.id }}">{{ post.id }}</a> {{ post.name }} - {{ w.format_date_time(post.time, request) }}
-                </div>
-                <div class="post_mod_links">
-                    &nbsp;
-                    {% if forum_moderator or post.user == user %}
-                        <a href="/board/edit_post/{{ post.id }}">Edit</a>
-                         - 
-                        <a href="/board/delete_post/{{ post.id }}">Delete</a>
-                    {% endif %}
-                </div>
-                <div class="post_list_body">
-                    {{ w.bbcode(post.article) | safe}}
-                </div>
-                <div class="post_list_sig">
-                    {{ post.user.signature }}
-                </div>
-            </div>
-            <div>&nbsp;</div>
-        </div>
-    {% endfor %}
-</div>
-{% if forum_reply %}
-<div class="quickreply">
-    Quick Reply
-    <div class="quickreply_input">
-        {{ form | safe }}
-    </div>
-</div>
-{% else %}
-<div class="quickreply">
-    <div class="quickreply_input">
-        <a href="/userarea/login">Login to post a reply.</a>
-    </div>
-</div>
-{% endif %}
+{% include 'templates/board/view_thread_content.jinja2' %}
 {% endblock %}

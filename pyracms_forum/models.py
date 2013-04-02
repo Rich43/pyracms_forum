@@ -1,6 +1,6 @@
 from datetime import datetime
 from pyracms.models import Files, User, Base
-from sqlalchemy import Column, Integer, Unicode, DateTime, Boolean
+from sqlalchemy import Column, Integer, Unicode, UnicodeText, DateTime, Boolean
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import ForeignKey, UniqueConstraint
 
@@ -13,8 +13,6 @@ class BBUser(Base):
     signature = Column(Unicode(128), default='')
     user_id = Column(Integer, ForeignKey('user.id'), nullable=False)
     user = relationship(User)
-    thread_id = Column(Integer, ForeignKey('bbthread.id'), nullable=False)
-    thread = relationship("BBThread", cascade="all, delete")
     
 class BBVotes(Base):
     __tablename__ = 'bbvotes'
@@ -60,7 +58,7 @@ class BBPost(Base):
     __table_args__ = {'mysql_engine': 'InnoDB', 'mysql_charset': 'utf8'}
     id = Column(Integer, primary_key=True)
     name = Column(Unicode(128), index=True, nullable=False)
-    article = Column(Unicode(16384), default='')
+    article = Column(UnicodeText, default='')
     time = Column(DateTime, default=datetime.utcnow)
     user_id = Column(Integer, ForeignKey('bbuser.id'), nullable=False)
     user = relationship(BBUser)
@@ -104,7 +102,7 @@ class BBForum(Base):
     name = Column(Unicode(128), index=True, unique=True, nullable=False)
     category_id = Column(Integer, ForeignKey('bbcategory.id'))
     category = relationship("BBCategory")
-    description = Column(Unicode(16384), default='')
+    description = Column(UnicodeText, default='')
     threads = relationship(BBThread)
 
     def __init__(self, name, description, category):
@@ -120,3 +118,13 @@ class BBForum(Base):
         for thread in self.threads:
             posts += thread.posts.count()
         return posts
+
+class BBComment(Base):
+    __tablename__ = 'bbcomment'
+    __table_args__ = {'mysql_engine': 'InnoDB', 'mysql_charset': 'utf8'}
+
+    id = Column(Integer, primary_key=True)
+    hash_text = Column(Unicode(128), nullable=False, unique=True)
+    thread_id = Column(Integer, ForeignKey('bbthread.id'), 
+                       nullable=False, unique=True)
+    thread = relationship(BBThread, cascade="all, delete")

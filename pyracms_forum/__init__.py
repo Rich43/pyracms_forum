@@ -1,7 +1,14 @@
+from .lib.commentlib import CommentLib
+from pyramid.events import BeforeRender
+
+def add_renderer_globals(event):
+    event['commentlib'] = CommentLib()
+    
 def includeme(config):
     """ Activate the forum; usually called via
     ``config.include('pyracms_forum')`` instead of being invoked
     directly. """
+    config.add_subscriber(add_renderer_globals, BeforeRender)
     config.include('pyramid_jinja2')
     config.add_jinja2_search_path("pyracms_forum:templates")
     # Forum routes
