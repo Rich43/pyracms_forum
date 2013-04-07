@@ -140,7 +140,7 @@ class BoardLib():
         """
         
         vote = BBVotes(user, like)
-        vote.page = db_obj
+        vote.post = db_obj
         try:
             DBSession.add(vote)
             transaction.commit()
