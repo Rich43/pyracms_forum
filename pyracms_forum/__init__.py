@@ -18,7 +18,8 @@ def includeme(config):
     config.add_route('edit_post', '/board/edit_post/{postid}')
     config.add_route('delete_post', '/board/delete_post/{postid}')
     config.add_route('category_list', '/board/list')
-
+    config.add_route('forum_add_vote', '/vote/post/{vote_id}/{like}')
+    
     # Forum Administration routes
     config.add_route('edit_forum_category',
                      '/board_admin/edit_forum_category')

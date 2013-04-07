@@ -1,6 +1,9 @@
 from ..models import BBCategory, BBForum, BBThread, BBPost
 from pyracms.models import DBSession
+from pyracms_forum.models import BBVotes
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import NoResultFound
+import transaction
 
 class CategoryNotFound(Exception):
     pass
@@ -12,6 +15,9 @@ class ThreadNotFound(Exception):
     pass
 
 class PostNotFound(Exception):
+    pass
+
+class AlreadyVoted(Exception):
     pass
 
 class BoardLib():
@@ -127,3 +133,17 @@ class BoardLib():
             post.user.postcount += -1
             DBSession.delete(post)
             return 1
+        
+    def add_vote(self, db_obj, user, like):
+        """
+        Add a vote to the database
+        """
+        
+        vote = BBVotes(user, like)
+        vote.page = db_obj
+        try:
+            DBSession.add(vote)
+            transaction.commit()
+        except IntegrityError:
+            transaction.abort()
+            raise AlreadyVoted

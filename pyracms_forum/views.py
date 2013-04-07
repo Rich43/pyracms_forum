@@ -4,11 +4,11 @@ A bulletin board, all non-admin views go in here.
 from .deform_schemas.board import QuickReplySchema, ThreadSchema, PostSchema
 from .deform_schemas.board_admin import ForumCategory, EditForum
 from .lib.bbuserlib import BBUserLib
-from .lib.boardlib import BoardLib
+from .lib.boardlib import AlreadyVoted, BoardLib
 from pyracms.lib.helperlib import (get_username, rapid_deform, redirect, 
     serialize_relation)
 from pyracms.lib.settingslib import SettingsLib
-from pyracms.views import INFO
+from pyracms.views import INFO, ERROR
 from pyramid.httpexceptions import HTTPFound, HTTPForbidden
 from pyramid.security import has_permission
 from pyramid.url import route_url
@@ -255,3 +255,18 @@ def edit_forum_category(context, request):
         message = "Editing Forum Categorys"
         result.update({"title": message, "header": message})
     return result
+
+@view_config(route_name='forum_add_vote', permission='vote')
+def forum_add_vote(context, request):
+    """
+    Add a vote to a post
+    """
+    vote_id = request.matchdict.get('vote_id')
+    like = request.matchdict.get('like').lower() == "true"
+    post = bb.get_post(vote_id)
+    try:
+        bb.add_vote(post, u.show(get_username(request)), like)
+        request.session.flash(s.show_setting("INFO_VOTE"), INFO)
+    except AlreadyVoted:
+        request.session.flash(s.show_setting("ERROR_VOTE"), ERROR)
+    return redirect(request, "article_read", page_id=vote_id)

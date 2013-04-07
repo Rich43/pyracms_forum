@@ -7,8 +7,8 @@
                 <a href="/userarea/profile/{{post.user.name}}">{{ post.user.user.full_name }}</a> <br />
                 Join Date: {{ w.format_date(post.user.user.created, request) }} <br />
                 Posts: {{ post.user.postcount }} <br />
-                <a href="/vote/post/thread/{{ thread.id }}/{{ post.id }}/True">+1</a> {{ vote_count(post, True) }}  
-                <a href="/vote/post/thread/{{ thread.id }}/{{ post.id }}/False">-1</a> {{ vote_count(post, False) }}
+                <a href="/vote/post/{{ post.id }}/True">+1</a> {{ vote_count(post, True) }}  
+                <a href="/vote/post/{{ post.id }}/False">-1</a> {{ vote_count(post, False) }}
             </div>
             <div class="post_container">
                 <div class="post_list_title">
