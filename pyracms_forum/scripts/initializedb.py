@@ -126,6 +126,6 @@ def main(argv=sys.argv):
         
         # Append CSS
         s = SettingsLib()
-        s.update("CSS", s.show_setting("CSS").value + css)
+        s.update("CSS", s.show_setting("CSS") + css)
         s.create("INFO_FORUM_CATEGORY_UPDATED", 
                  "The list of forum categories has been updated.")
