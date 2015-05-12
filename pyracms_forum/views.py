@@ -236,7 +236,7 @@ def edit_forum_category(context, request):
         """
         Save edited forum category to database
         """
-        groups = set([g.name for g in bind_params["groups"]])
+        groups = set([g for g in bind_params["forum_categories"]])
         deserialized_groups = set(deserialized['forum_categories'])
         for item in deserialized_groups - groups:
             bb.add_category(item)
@@ -246,11 +246,9 @@ def edit_forum_category(context, request):
                               INFO)
         return redirect(request, 'category_list')
     groups = bb.list_categories().all()
-    appstruct = {'forum_categories': 
-                 [x['name'] for x in serialize_relation(groups)]}
     result = rapid_deform(context, request, ForumCategory, 
-                          edit_forum_category_submit, appstruct=appstruct,
-                          groups=groups)
+                          edit_forum_category_submit, 
+                          forum_categories=[x['name'] for x in serialize_relation(groups)])
     if isinstance(result, dict):
         message = "Editing Forum Categorys"
         result.update({"title": message, "header": message})
