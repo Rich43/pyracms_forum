@@ -1,0 +1,52 @@
+{% from "pyracms:templates/widgets/vote_count.jinja2" import vote_count %}
+{% macro comments(request, thread, form, forum_reply, h, message, source_name, return_id, hide=False, gamedep_type=None) %}
+{% if hide and not request.query_string.startswith("comments") %}
+<div class="comments">
+{% endif %}
+    <h3>{{ message }}</h3>
+    <div class="thread_container">
+        {% for post in thread.posts %}
+            <div class="post_list">
+                <div class="post_user_container">
+                    <a href="/userarea/profile/{{post.user.name}}">{{ post.user.display_name }}</a><br />
+                    <a href="/vote/post/{{ source_name }}/{% if source_name == "gamedep" %}{{ gamedep_type }}/{% endif %}{{ return_id }}/{{ post.id }}/True">+1</a> {{ vote_count(post, True) }}
+                    <a href="/vote/post/{{ source_name }}/{% if source_name == "gamedep" %}{{ gamedep_type }}/{% endif %}{{ return_id }}/{{ post.id }}/False">-1</a> {{ vote_count(post, False) }}
+                </div>
+                <div class="post_container">
+                    <div class="post_list_title">
+                        <a name="post{{ post.id }}" href="#post{{ post.id }}">{{ post.id }}</a> {{ h.format_date_time(post.time, request) }}
+                    </div>
+                    <div class="post_mod_links">
+                        &nbsp;
+                        {% if forum_moderator or post.user.id == userid %}
+                            <a href="/board/editpost/{{ post.id }}">Edit</a>
+                             -
+                            <a href="/board/delete_post/{{ post.id }}">Delete</a>
+                        {% endif %}
+                    </div>
+                    <div class="post_list_body">
+                        {{ h.bbcode(post.article) | safe}}
+                    </div>
+                </div>
+                <div>&nbsp;</div>
+            </div>
+        {% endfor %}
+    </div>
+    {% if forum_reply %}
+    <div class="quickreply">
+        Post a comment
+        <div class="quickreply_input">
+            {{ form | safe }}
+        </div>
+    </div>
+    {% else %}
+<div class="quickreply">
+    <div class="quickreply_input">
+        <a href="/userarea/login">Login to post a comment.</a>
+    </div>
+</div>
+    {% endif %}
+{% if hide and not request.query_string.startswith("comments") %}
+</div>
+{% endif %}
+{% endmacro %}

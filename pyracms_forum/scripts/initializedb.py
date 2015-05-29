@@ -103,6 +103,7 @@ def main(argv=sys.argv):
     
         # Default ACL
         acl = RootFactory(session=DBSession)
+        acl.__acl__.append((Allow, Everyone, 'forum_view'))
         acl.__acl__.append((Allow, "group:admin", 'edit_board'))
         acl.__acl__.append((Allow, "group:forum", "group:forum"))
         acl.__acl__.append((Allow, "group:forum", 'forum_reply'))
@@ -129,3 +130,4 @@ def main(argv=sys.argv):
         s.update("CSS", s.show_setting("CSS") + css)
         s.create("INFO_FORUM_CATEGORY_UPDATED", 
                  "The list of forum categories has been updated.")
+        s.create("PYRACMS_FORUM", "")

@@ -27,14 +27,16 @@ def category_list(context, request):
     """
     return {'categories': bb.list_categories()}
 
-@view_config(route_name='thread_list', renderer='board/thread_list.jinja2')
+@view_config(route_name='thread_list', renderer='board/thread_list.jinja2',
+             permission='forum_view')
 def get_forum(context, request):
     """
     List all threads in a forum.
     """
     return {'forum': bb.get_forum(request.matchdict.get('forumid'))}
 
-@view_config(route_name='thread', renderer='board/view_thread.jinja2')
+@view_config(route_name='thread', renderer='board/view_thread.jinja2',
+             permission='forum_view')
 def get_thread(context, request, threadid=None):
     """
     List all posts in a thread
