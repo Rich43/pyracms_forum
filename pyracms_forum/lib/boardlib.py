@@ -92,18 +92,22 @@ class BoardLib():
         post = BBPost(title, body, user)
         thread.posts.append(post)
         
-    def add_thread(self, title, description, body, user, forum=None):
+    def add_thread(self, title, description, body, user, forum=None, add_post=True):
         """
         Add a thread, optionally to a forum.
         """
         thread = BBThread(title, description)
         if forum:
             thread.forum = forum
-        self.add_post(thread, title, body, user)
+        if add_post:
+            self.add_post(thread, title, body, user)
         DBSession.add(thread)
         DBSession.flush()
         return thread
-        
+
+    def delete_thread(self, threadid):
+        DBSession.delete(self.get_thread(threadid))
+
     def get_post(self, postid):
         """
         Get a bulletin board post database object
