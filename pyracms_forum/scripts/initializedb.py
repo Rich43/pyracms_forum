@@ -95,11 +95,9 @@ def main(argv=sys.argv):
     with transaction.manager:
         # Add Groups
         u = UserLib()
-        admin_user = u.show("admin")
         u.create_group("forum_moderator", "Ability to Edit " +
-                       "and Delete forum posts/threads.", [admin_user])
-        u.create_group("forum", "Ability to Add forum posts/threads.", 
-                       [admin_user])
+                       "and Delete forum posts/threads.")
+        u.create_group("forum", "Ability to Add forum posts/threads.")
     
         # Default ACL
         acl = RootFactory(session=DBSession)
@@ -130,4 +128,6 @@ def main(argv=sys.argv):
         s.update("CSS", s.show_setting("CSS") + css)
         s.create("INFO_FORUM_CATEGORY_UPDATED", 
                  "The list of forum categories has been updated.")
-        s.create("PYRACMS_FORUM", "")
+        s.create("PYRACMS_FORUM")
+        s.update("DEFAULTGROUPS", s.show_setting("DEFAULTGROUPS") +
+                 "forum\n")
