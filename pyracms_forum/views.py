@@ -3,7 +3,7 @@ A bulletin board, all non-admin views go in here.
 """
 from .deform_schemas.board import QuickReplySchema, ThreadSchema, PostSchema
 from .deform_schemas.board_admin import ForumCategory, EditForum
-from .lib.bbuserlib import BBUserLib
+from pyracms.lib.userlib import UserLib
 from .lib.boardlib import AlreadyVoted, BoardLib
 from pyracms.lib.helperlib import (get_username, rapid_deform, redirect, 
     serialize_relation)
@@ -16,7 +16,7 @@ from pyramid.view import view_config
 import transaction
 
 bb = BoardLib()
-u = BBUserLib()
+u = UserLib()
 s = SettingsLib()
 
 @view_config(route_name='category_list', 
