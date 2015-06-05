@@ -114,14 +114,14 @@ def main(argv=sys.argv):
 
         # Add Menu Items
         m = MenuLib()
-        DBSession.add(Menu("Forum", "/board/list", 10, 
-                           m.show_group("main_menu"), Everyone))
+        m.add_menu_item_url("Forum", "/board/list", 10,
+                           m.show_group("main_menu"), Everyone)
         group = m.show_group("admin_area")
-        DBSession.add(Menu("Forum Categories", 
+        m.add_menu_item_url("Forum Categories",
                            "/board_admin/edit_forum_category", 20, group, 
-                           'edit_menu'))
-        DBSession.add(Menu("Edit Forums", "/board_admin/list_forum_category", 
-                           21, group, 'edit_menu'))
+                           'edit_menu')
+        m.add_menu_item_url("Edit Forums", "/board_admin/list_forum_category",
+                           21, group, 'edit_menu')
         
         # Append CSS
         s = SettingsLib()
