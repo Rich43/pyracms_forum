@@ -4,8 +4,8 @@
     {% for post in thread.posts %}
         <div class="post_list">
             <div class="post_user_container">
-                <a href="/userarea/profile/{{post.user.name}}">{{ post.user.user.full_name }}</a> <br />
-                Join Date: {{ w.format_date(post.user.user.created, request) }} <br />
+                <a href="/userarea/profile/{{post.user.name}}">{{ post.user.full_name }}</a> <br />
+                Join Date: {{ w.format_date(post.user.created, request) }} <br />
                 Posts: {{ post.user.postcount }} <br />
                 <a href="/vote/post/{{ post.id }}/True">+1</a> {{ vote_count(post, True) }}  
                 <a href="/vote/post/{{ post.id }}/False">-1</a> {{ vote_count(post, False) }}
