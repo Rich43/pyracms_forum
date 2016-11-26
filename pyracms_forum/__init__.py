@@ -12,6 +12,7 @@ def includeme(config):
     config.include('pyramid_jinja2')
     config.add_jinja2_search_path("pyracms_forum:templates")
     # Forum routes
+    #  TODO: Force decimals in url
     config.add_route('thread', '/board/thread/{threadid}')
     config.add_route('create_thread', '/board/create_thread/{forumid}')
     config.add_route('thread_list', '/board/forum/{forumid}')
