@@ -35,3 +35,4 @@ def includeme(config):
     config.add_route('delete_forum',
                      '/board_admin/delete_forum/{forum_id}')
     config.scan("pyracms_forum.views")
+    config.scan("pyracms_forum.web_service_views")
