@@ -1,7 +1,7 @@
 from colander import SequenceSchema, SchemaNode, String, Schema, deferred
 
 class ForumCategoryItem(SequenceSchema):
-    name = SchemaNode(String())
+    name = SchemaNode(String(), location="body", type='str')
 
 class ForumCategory(Schema):
     forum_categories = ForumCategoryItem()

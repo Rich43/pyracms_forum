@@ -1,19 +1,24 @@
 from cornice import Service
 from cornice.validators import colander_body_validator
-
 from pyracms.lib.userlib import UserLib
 from pyracms.web_service_views import (valid_token, valid_permission,
                                        APP_JSON, valid_qs_int)
 
 from .deform_schemas.board import ThreadSchema, PostSchema
-from .deform_schemas.board_admin import EditForum
+from .deform_schemas.board_admin import EditForum, ForumCategoryItem
 from .lib.boardlib import BoardLib, ForumNotFound, ThreadNotFound, PostNotFound
 
 bb = BoardLib()
 u = UserLib()
 
+
+def edit_board_permission(request, **kwargs):
+    if not valid_permission(request, 'edit_board'):
+        request.errors.add('body', 'access_denied', 'Access denied')
+
+
 category_list = Service(name='api_category_list', path='/api/board/list',
-                        description="List forums")
+                        description="List categories")
 
 
 @category_list.get()
@@ -34,6 +39,32 @@ def api_category_list(request):
     return category_list
 
 
+category = Service(name='api_category', path='/api/board/category',
+                   description="Create, Update, Delete Categories")
+
+
+@category.put(content_type=APP_JSON, schema=ForumCategoryItem,
+              validators=(valid_token, colander_body_validator,
+                          edit_board_permission))
+def create_category(request):
+    """Create category."""
+    pass
+
+
+@category.patch(content_type=APP_JSON, schema=ForumCategoryItem,
+                validators=(valid_token, colander_body_validator,
+                            edit_board_permission))
+def update_category(request):
+    """Update category."""
+    pass
+
+
+@category.delete(validators=valid_token, edit_board_permission)
+def delete_category(request):
+    """Delete category."""
+    pass
+
+
 forum = Service(name='api_forum', path='/api/board/forum',
                 description="Create, Read, Update, Delete forums")
 
@@ -49,7 +80,8 @@ def api_valid_forum_id(request, **kwargs):
 
 
 @forum.put(content_type=APP_JSON, schema=EditForum,
-           validators=(valid_token, colander_body_validator))
+           validators=(valid_token, colander_body_validator,
+                       edit_board_permission))
 def create_forum(request):
     """Create forum."""
     pass
@@ -81,13 +113,14 @@ def read_forum(request):
 
 
 @forum.patch(content_type=APP_JSON, schema=EditForum,
-             validators=(valid_token, colander_body_validator))
+             validators=(valid_token, colander_body_validator,
+                         edit_board_permission))
 def update_forum(request):
     """Update forum."""
     pass
 
 
-@forum.delete(validators=valid_token)
+@forum.delete(validators=valid_token, edit_board_permission)
 def delete_forum(request):
     """Delete forum."""
     pass
@@ -111,7 +144,9 @@ def api_valid_thread_id(request, **kwargs):
             validators=(valid_token, colander_body_validator))
 def create_thread(request):
     """Create thread."""
-    pass
+    if not valid_permission(request, 'forum_reply'):
+        request.errors.add('body', 'access_denied', 'Access denied')
+        return
 
 
 @thread.get(validators=api_valid_thread_id)
@@ -138,13 +173,17 @@ def read_thread(request):
               validators=(valid_token, colander_body_validator))
 def update_thread(request):
     """Update thread."""
-    pass
+    if not valid_permission(request, 'forum_edit'):
+        request.errors.add('body', 'access_denied', 'Access denied')
+        return
 
 
 @thread.delete(validators=valid_token)
 def delete_thread(request):
     """Delete thread."""
-    pass
+    if not valid_permission(request, 'forum_delete'):
+        request.errors.add('body', 'access_denied', 'Access denied')
+        return
 
 
 post = Service(name='api_post', path='/api/board/post',
@@ -165,7 +204,9 @@ def api_valid_post_id(request, **kwargs):
           validators=(valid_token, colander_body_validator))
 def create_post(request):
     """Create post."""
-    pass
+    if not valid_permission(request, 'forum_reply'):
+        request.errors.add('body', 'access_denied', 'Access denied')
+        return
 
 
 @post.get(validators=api_valid_post_id)
@@ -183,7 +224,9 @@ def read_post(request):
             validators=(valid_token, colander_body_validator))
 def update_post(request):
     """Update post."""
-    pass
+    if not valid_permission(request, 'forum_edit'):
+        request.errors.add('body', 'access_denied', 'Access denied')
+        return
 
 
 @post.delete(validators=valid_token)
