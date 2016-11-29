@@ -25,6 +25,7 @@ def deferred_default_forum_description(node, kw):
         return ''
 
 class EditForum(Schema):
-    name = SchemaNode(String(), default=deferred_default_forum_name)
-    description = SchemaNode(String(),
+    name = SchemaNode(String(), default=deferred_default_forum_name,
+                      location="body", type='str')
+    description = SchemaNode(String(), location="body", type='str',
                              default=deferred_default_forum_description)

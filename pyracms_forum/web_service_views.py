@@ -6,6 +6,7 @@ from pyracms.web_service_views import (valid_token, valid_permission,
                                        APP_JSON, valid_qs_int)
 
 from .deform_schemas.board import ThreadSchema, PostSchema
+from .deform_schemas.board_admin import EditForum
 from .lib.boardlib import BoardLib, ForumNotFound, ThreadNotFound, PostNotFound
 
 bb = BoardLib()
@@ -47,7 +48,8 @@ def api_valid_forum_id(request, **kwargs):
                                '%s not found in database.' % what)
 
 
-@forum.put(content_type=APP_JSON)
+@forum.put(content_type=APP_JSON, schema=EditForum,
+           validators=(valid_token, colander_body_validator))
 def create_forum(request):
     """Create forum."""
     pass
@@ -78,13 +80,14 @@ def read_forum(request):
     return forum_list
 
 
-@forum.patch(content_type=APP_JSON)
+@forum.patch(content_type=APP_JSON, schema=EditForum,
+             validators=(valid_token, colander_body_validator))
 def update_forum(request):
     """Update forum."""
     pass
 
 
-@forum.delete()
+@forum.delete(validators=valid_token)
 def delete_forum(request):
     """Delete forum."""
     pass
@@ -104,7 +107,8 @@ def api_valid_thread_id(request, **kwargs):
                                '%s not found in database.' % what)
 
 
-@thread.put(content_type=APP_JSON)
+@thread.put(content_type=APP_JSON, schema=ThreadSchema,
+            validators=(valid_token, colander_body_validator))
 def create_thread(request):
     """Create thread."""
     pass
@@ -130,13 +134,14 @@ def read_thread(request):
     return thread_list
 
 
-@thread.patch(content_type=APP_JSON)
+@thread.patch(content_type=APP_JSON, schema=ThreadSchema,
+              validators=(valid_token, colander_body_validator))
 def update_thread(request):
     """Update thread."""
     pass
 
 
-@thread.delete()
+@thread.delete(validators=valid_token)
 def delete_thread(request):
     """Delete thread."""
     pass
@@ -156,7 +161,8 @@ def api_valid_post_id(request, **kwargs):
                                '%s not found in database.' % what)
 
 
-@post.put(content_type=APP_JSON)
+@post.put(content_type=APP_JSON, schema=PostSchema,
+          validators=(valid_token, colander_body_validator))
 def create_post(request):
     """Create post."""
     pass
@@ -173,13 +179,14 @@ def read_post(request):
             "post_id": post.id}
 
 
-@post.patch(content_type=APP_JSON)
+@post.patch(content_type=APP_JSON, schema=PostSchema,
+            validators=(valid_token, colander_body_validator))
 def update_post(request):
     """Update post."""
     pass
 
 
-@post.delete()
+@post.delete(validators=valid_token)
 def delete_post(request):
     """Delete post."""
     pass
