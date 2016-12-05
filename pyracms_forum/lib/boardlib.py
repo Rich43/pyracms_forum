@@ -17,6 +17,12 @@ class ThreadNotFound(Exception):
 class PostNotFound(Exception):
     pass
 
+class CategoryFound(Exception):
+    pass
+
+class ForumFound(Exception):
+    pass
+
 class AlreadyVoted(Exception):
     pass
 
@@ -29,13 +35,19 @@ class BoardLib():
         """
         Add a forum category
         """
+        try:
+            self.get_category(name)
+            raise CategoryFound
+        except CategoryNotFound:
+            pass
         DBSession.add(BBCategory(name))
         
     def delete_category(self, name):
         """
         Delete a forum category
         """
-        DBSession.remove(self.get_category(name))
+        category = self.get_category(name)
+        DBSession.delete(category)
     
     def get_category(self, name):
         """
@@ -63,8 +75,23 @@ class BoardLib():
         """
         Add a forum
         """
+        try:
+            self.get_forum_by_name(name)
+            raise ForumFound
+        except ForumNotFound:
+            pass
         DBSession.add(BBForum(name, description, category))
-        
+
+    def get_forum_by_name(self, forum_name):
+        """
+        Returns the specified forum by name
+        """
+        try:
+            forum = DBSession.query(BBForum).filter_by(name=forum_name).one()
+        except NoResultFound:
+            raise ForumNotFound
+        return forum
+
     def get_forum(self, forumid):
         """
         Returns the specified forum

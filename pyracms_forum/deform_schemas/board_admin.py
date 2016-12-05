@@ -3,6 +3,13 @@ from colander import SequenceSchema, SchemaNode, String, Schema, deferred
 class ForumCategoryItem(SequenceSchema):
     name = SchemaNode(String(), location="body", type='str')
 
+class ForumCategoryItemTwo(Schema):
+    name = SchemaNode(String(), location="body", type='str')
+
+class UpdateForumCategory(Schema):
+    old_name = SchemaNode(String(), location="body", type='str')
+    new_name = SchemaNode(String(), location="body", type='str')
+
 class ForumCategory(Schema):
     forum_categories = ForumCategoryItem()
 

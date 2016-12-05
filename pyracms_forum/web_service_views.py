@@ -2,11 +2,13 @@ from cornice import Service
 from cornice.validators import colander_body_validator
 from pyracms.lib.userlib import UserLib
 from pyracms.web_service_views import (valid_token, valid_permission,
-                                       APP_JSON, valid_qs_int)
+                                       APP_JSON, valid_qs_int, valid_qs)
 
 from .deform_schemas.board import ThreadSchema, PostSchema
-from .deform_schemas.board_admin import EditForum, ForumCategoryItem
-from .lib.boardlib import BoardLib, ForumNotFound, ThreadNotFound, PostNotFound
+from .deform_schemas.board_admin import (EditForum, UpdateForumCategory,
+                                         ForumCategoryItemTwo)
+from .lib.boardlib import (BoardLib, ForumNotFound, ThreadNotFound,
+                           PostNotFound, CategoryNotFound, CategoryFound)
 
 bb = BoardLib()
 u = UserLib()
@@ -43,27 +45,55 @@ category = Service(name='api_category', path='/api/board/category',
                    description="Create, Update, Delete Categories")
 
 
-@category.put(content_type=APP_JSON, schema=ForumCategoryItem,
+@category.put(content_type=APP_JSON, schema=ForumCategoryItemTwo,
               validators=(valid_token, colander_body_validator,
                           edit_board_permission))
 def create_category(request):
     """Create category."""
-    pass
+    name = request.json_body.get('name')
+    try:
+        bb.add_category(name)
+    except CategoryFound:
+        request.errors.add('body', 'found',
+                           '%s already exists in database.' % "name")
+    return {"status": "created"}
 
-
-@category.patch(content_type=APP_JSON, schema=ForumCategoryItem,
+@category.patch(content_type=APP_JSON, schema=UpdateForumCategory,
                 validators=(valid_token, colander_body_validator,
                             edit_board_permission))
 def update_category(request):
     """Update category."""
-    pass
+    try:
+        category = bb.get_category(request.json_body["old_name"])
+    except CategoryNotFound:
+        request.errors.add('body', 'not_found',
+                           '%s not found in database.' % "old_name")
+        return
+    try:
+        category = bb.get_category(request.json_body["new_name"])
+        request.errors.add('body', 'found',
+                           '%s already exists in database.' % "new_name")
+        return
+    except CategoryNotFound:
+        pass
+    category.name = request.json_body["new_name"]
+    return {"status": "updated"}
 
+def api_valid_name(request, **kwargs):
+    what = "name"
+    if valid_qs(request, what):
+        try:
+            bb.get_category(request.params[what])
+        except CategoryNotFound:
+            request.errors.add('querystring', 'not_found',
+                               '%s not found in database.' % what)
 
-@category.delete(validators=valid_token, edit_board_permission)
+@category.delete(validators=(valid_token, edit_board_permission,
+                             api_valid_name))
 def delete_category(request):
     """Delete category."""
-    pass
-
+    bb.delete_category(request.params['name'])
+    return {"status": "deleted"}
 
 forum = Service(name='api_forum', path='/api/board/forum',
                 description="Create, Read, Update, Delete forums")
@@ -120,7 +150,7 @@ def update_forum(request):
     pass
 
 
-@forum.delete(validators=valid_token, edit_board_permission)
+@forum.delete(validators=(valid_token, edit_board_permission))
 def delete_forum(request):
     """Delete forum."""
     pass
