@@ -3,7 +3,7 @@ from colander import SequenceSchema, SchemaNode, String, Schema, deferred
 class ForumCategoryItem(SequenceSchema):
     name = SchemaNode(String(), location="body", type='str')
 
-class ForumCategoryItemTwo(Schema):
+class ForumCategoryItemAPI(Schema):
     name = SchemaNode(String(), location="body", type='str')
 
 class UpdateForumCategory(Schema):
@@ -36,3 +36,6 @@ class EditForum(Schema):
                       location="body", type='str')
     description = SchemaNode(String(), location="body", type='str',
                              default=deferred_default_forum_description)
+
+class EditForumAPI(EditForum):
+    category = SchemaNode(String(), location="body", type='str')

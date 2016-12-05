@@ -80,7 +80,10 @@ class BoardLib():
             raise ForumFound
         except ForumNotFound:
             pass
-        DBSession.add(BBForum(name, description, category))
+        forum_obj = BBForum(name, description, category)
+        DBSession.add(forum_obj)
+        DBSession.flush()
+        return forum_obj
 
     def get_forum_by_name(self, forum_name):
         """
@@ -118,6 +121,8 @@ class BoardLib():
         """
         post = BBPost(title, body, user)
         thread.posts.append(post)
+        DBSession.flush()
+        return post
         
     def add_thread(self, title, description, body, user, forum=None, add_post=True):
         """

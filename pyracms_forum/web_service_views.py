@@ -6,9 +6,10 @@ from pyracms.web_service_views import (valid_token, valid_permission,
 
 from .deform_schemas.board import ThreadSchema, PostSchema
 from .deform_schemas.board_admin import (EditForum, UpdateForumCategory,
-                                         ForumCategoryItemTwo)
+                                         ForumCategoryItemAPI, EditForumAPI)
 from .lib.boardlib import (BoardLib, ForumNotFound, ThreadNotFound,
-                           PostNotFound, CategoryNotFound, CategoryFound)
+                           PostNotFound, CategoryNotFound, CategoryFound,
+                           ForumFound)
 
 bb = BoardLib()
 u = UserLib()
@@ -17,7 +18,7 @@ u = UserLib()
 def edit_board_permission(request, **kwargs):
     if not valid_permission(request, 'edit_board'):
         request.errors.add('body', 'access_denied', 'Access denied')
-
+        return
 
 category_list = Service(name='api_category_list', path='/api/board/list',
                         description="List categories")
@@ -27,16 +28,16 @@ category_list = Service(name='api_category_list', path='/api/board/list',
 def api_category_list(request):
     """Lists forums."""
     category_list = []
-    for category in bb.list_categories():
+    for category_obj in bb.list_categories():
         forum_list = []
-        for forum in category.forums:
+        for forum in category_obj.forums:
             forum_list.append({"forum_id": forum.id,
                                "forum_name": forum.name,
                                "forum_desc": forum.description,
                                "forum_total_threads": forum.total_threads(),
                                "forum_total_posts": forum.total_posts()})
-        category_list.append({"category_id": category.id,
-                              "category_name": category.name,
+        category_list.append({"category_id": category_obj.id,
+                              "category_name": category_obj.name,
                               "forums": forum_list})
     return category_list
 
@@ -44,8 +45,34 @@ def api_category_list(request):
 category = Service(name='api_category', path='/api/board/category',
                    description="Create, Update, Delete Categories")
 
+def api_valid_name(request, **kwargs):
+    what = "name"
+    if valid_qs(request, what):
+        try:
+            bb.get_category(request.params[what])
+        except CategoryNotFound:
+            request.errors.add('querystring', 'not_found',
+                               '%s not found in database.' % what)
+            return
 
-@category.put(content_type=APP_JSON, schema=ForumCategoryItemTwo,
+
+@category.get(validators=api_valid_name)
+def read_category(request):
+    name = request.params.get('name')
+    category_obj = bb.get_category(name)
+    forum_list = []
+    for forum in category_obj.forums:
+        forum_list.append({"forum_id": forum.id,
+                           "forum_name": forum.name,
+                           "forum_desc": forum.description,
+                           "forum_total_threads": forum.total_threads(),
+                           "forum_total_posts": forum.total_posts()})
+    return {"category_id": category_obj.id,
+                          "category_name": category_obj.name,
+                          "forums": forum_list}
+
+
+@category.put(content_type=APP_JSON, schema=ForumCategoryItemAPI,
               validators=(valid_token, colander_body_validator,
                           edit_board_permission))
 def create_category(request):
@@ -57,6 +84,7 @@ def create_category(request):
         request.errors.add('body', 'found',
                            '%s already exists in database.' % "name")
     return {"status": "created"}
+
 
 @category.patch(content_type=APP_JSON, schema=UpdateForumCategory,
                 validators=(valid_token, colander_body_validator,
@@ -79,14 +107,6 @@ def update_category(request):
     category.name = request.json_body["new_name"]
     return {"status": "updated"}
 
-def api_valid_name(request, **kwargs):
-    what = "name"
-    if valid_qs(request, what):
-        try:
-            bb.get_category(request.params[what])
-        except CategoryNotFound:
-            request.errors.add('querystring', 'not_found',
-                               '%s not found in database.' % what)
 
 @category.delete(validators=(valid_token, edit_board_permission,
                              api_valid_name))
@@ -94,6 +114,7 @@ def delete_category(request):
     """Delete category."""
     bb.delete_category(request.params['name'])
     return {"status": "deleted"}
+
 
 forum = Service(name='api_forum', path='/api/board/forum',
                 description="Create, Read, Update, Delete forums")
@@ -107,14 +128,30 @@ def api_valid_forum_id(request, **kwargs):
         except ForumNotFound:
             request.errors.add('querystring', 'not_found',
                                '%s not found in database.' % what)
+            return
 
 
-@forum.put(content_type=APP_JSON, schema=EditForum,
+@forum.put(content_type=APP_JSON, schema=EditForumAPI,
            validators=(valid_token, colander_body_validator,
                        edit_board_permission))
 def create_forum(request):
     """Create forum."""
-    pass
+    name = request.json_body['name']
+    description = request.json_body['description']
+    category_name = request.json_body['category']
+    try:
+        category_obj = bb.get_category(category_name)
+    except CategoryNotFound:
+        request.errors.add('body', 'not_found',
+                           '%s not found in database.' % "category")
+        return
+    try:
+        bb.add_forum(name, description, category_obj)
+    except ForumFound:
+        request.errors.add('body', 'found',
+                           '%s already exists in database.' % "name")
+        return
+    return {"status": "created"}
 
 
 @forum.get(validators=api_valid_forum_id)
@@ -144,17 +181,43 @@ def read_forum(request):
 
 @forum.patch(content_type=APP_JSON, schema=EditForum,
              validators=(valid_token, colander_body_validator,
-                         edit_board_permission))
+                         edit_board_permission, api_valid_forum_id))
 def update_forum(request):
     """Update forum."""
-    pass
+    forum_id = request.params["forum_id"]
+    name = request.json_body['name']
+    description = request.json_body['description']
+    try:
+        forum = bb.get_forum(forum_id)
+    except ForumNotFound:
+        request.errors.add('body', 'not_found',
+                           '%s not found in database.' % "category")
+        return
+    if name != forum.name:
+        try:
+            bb.get_forum_by_name(name)
+            request.errors.add('body', 'found',
+                               '%s already exists in database.' % "name")
+            return
+        except ForumNotFound:
+            pass
+    forum.name = name
+    forum.description = description
+    return {"status": "updated"}
 
 
-@forum.delete(validators=(valid_token, edit_board_permission))
+@forum.delete(validators=(valid_token, edit_board_permission,
+                          api_valid_forum_id))
 def delete_forum(request):
     """Delete forum."""
-    pass
-
+    forum_id = request.params["forum_id"]
+    try:
+        forum = bb.get_forum(forum_id)
+    except ForumNotFound:
+        request.errors.add('body', 'not_found',
+                           '%s not found in database.' % "category")
+        return
+    bb.delete_forum(forum)
 
 thread = Service(name='api_thread', path='/api/board/thread',
                  description="Create, Read, Update, Delete threads")
