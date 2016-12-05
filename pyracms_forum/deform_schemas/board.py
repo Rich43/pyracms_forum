@@ -31,6 +31,14 @@ class ThreadSchema(MappingSchema):
     body = SchemaNode(String(), default='', location="body", type='str',
                       widget=TextAreaWidget(rows=5, cols=80))
 
+
+class ThreadSchemaAPI(MappingSchema):
+    title = SchemaNode(String(), default=deferred_default_title,
+                       widget=TextInputWidget(), location="body", type='str')
+    description = SchemaNode(String(), default=deferred_default_description,
+                             widget=TextInputWidget(), location="body",
+                             type='str')
+
 class PostSchema(MappingSchema):
     title = SchemaNode(String(), default=deferred_default_title,
                        widget=TextInputWidget(), location="body", type='str')

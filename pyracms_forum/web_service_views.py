@@ -4,7 +4,7 @@ from pyracms.lib.userlib import UserLib
 from pyracms.web_service_views import (valid_token, valid_permission,
                                        APP_JSON, valid_qs_int, valid_qs)
 
-from .deform_schemas.board import ThreadSchema, PostSchema
+from .deform_schemas.board import ThreadSchema, PostSchema, ThreadSchemaAPI
 from .deform_schemas.board_admin import (EditForum, UpdateForumCategory,
                                          ForumCategoryItemAPI, EditForumAPI)
 from .lib.boardlib import (BoardLib, ForumNotFound, ThreadNotFound,
@@ -19,6 +19,7 @@ def edit_board_permission(request, **kwargs):
     if not valid_permission(request, 'edit_board'):
         request.errors.add('body', 'access_denied', 'Access denied')
         return
+
 
 category_list = Service(name='api_category_list', path='/api/board/list',
                         description="List categories")
@@ -45,6 +46,7 @@ def api_category_list(request):
 category = Service(name='api_category', path='/api/board/category',
                    description="Create, Update, Delete Categories")
 
+
 def api_valid_name(request, **kwargs):
     what = "name"
     if valid_qs(request, what):
@@ -68,8 +70,8 @@ def read_category(request):
                            "forum_total_threads": forum.total_threads(),
                            "forum_total_posts": forum.total_posts()})
     return {"category_id": category_obj.id,
-                          "category_name": category_obj.name,
-                          "forums": forum_list}
+            "category_name": category_obj.name,
+            "forums": forum_list}
 
 
 @category.put(content_type=APP_JSON, schema=ForumCategoryItemAPI,
@@ -219,6 +221,7 @@ def delete_forum(request):
         return
     bb.delete_forum(forum)
 
+
 thread = Service(name='api_thread', path='/api/board/thread',
                  description="Create, Read, Update, Delete threads")
 
@@ -234,12 +237,22 @@ def api_valid_thread_id(request, **kwargs):
 
 
 @thread.put(content_type=APP_JSON, schema=ThreadSchema,
-            validators=(valid_token, colander_body_validator))
+            validators=(valid_token, colander_body_validator,
+                        api_valid_forum_id))
 def create_thread(request):
     """Create thread."""
     if not valid_permission(request, 'forum_reply'):
         request.errors.add('body', 'access_denied', 'Access denied')
         return
+    user = request.validated['user_db']
+    forum = bb.get_forum(request.params.get('forum_id'))
+    thread = bb.add_thread(request.json_body.get("title"),
+                           request.json_body.get("description"),
+                           request.json_body.get("body"), user, forum)
+    return {"status": "success", "thread_id": thread.id,
+            "thread_name": thread.name,
+            "thread_desc": thread.description,
+            "thread_total_posts": thread.total_posts()}
 
 
 @thread.get(validators=api_valid_thread_id)
@@ -262,22 +275,42 @@ def read_thread(request):
     return thread_list
 
 
-@thread.patch(content_type=APP_JSON, schema=ThreadSchema,
-              validators=(valid_token, colander_body_validator))
+@thread.patch(content_type=APP_JSON, schema=ThreadSchemaAPI,
+              validators=(valid_token, colander_body_validator,
+                          api_valid_thread_id))
 def update_thread(request):
     """Update thread."""
+    user = request.validated['user_db']
+    thread = bb.get_thread(request.params["thread_id"])
     if not valid_permission(request, 'forum_edit'):
         request.errors.add('body', 'access_denied', 'Access denied')
         return
+    if (valid_permission(request, 'forum_mod_edit') or
+            thread.posts[0].user == user):
+        thread.name = request.json_body['title']
+        thread.description = request.json_body['description']
+    else:
+        request.errors.add('body', 'access_denied', 'Access denied')
+        return
+    return {"status": "success", "thread_id": thread.id,
+            "thread_name": thread.name,
+            "thread_desc": thread.description,
+            "thread_total_posts": thread.total_posts()}
 
-
-@thread.delete(validators=valid_token)
+@thread.delete(validators=(valid_token, api_valid_thread_id))
 def delete_thread(request):
     """Delete thread."""
+    user = request.validated['user_db']
     if not valid_permission(request, 'forum_delete'):
         request.errors.add('body', 'access_denied', 'Access denied')
         return
-
+    if not (valid_permission(request, 'forum_mod_edit') or
+            thread.posts[0].user == user):
+        request.errors.add('body', 'access_denied', 'Access denied')
+        return
+    thread_id = request.params["thread_id"]
+    bb.delete_thread(thread_id)
+    return {"status": "success"}
 
 post = Service(name='api_post', path='/api/board/post',
                description="Create, Read, Update, Delete posts")
