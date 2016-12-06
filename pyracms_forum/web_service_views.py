@@ -300,12 +300,8 @@ def update_thread(request):
 @thread.delete(validators=(valid_token, api_valid_thread_id))
 def delete_thread(request):
     """Delete thread."""
-    user = request.validated['user_db']
-    if not valid_permission(request, 'forum_delete'):
-        request.errors.add('body', 'access_denied', 'Access denied')
-        return
-    if not (valid_permission(request, 'forum_mod_edit') or
-            thread.posts[0].user == user):
+    if not (valid_permission(request, 'forum_delete') and
+            valid_permission(request, 'forum_mod_edit')):
         request.errors.add('body', 'access_denied', 'Access denied')
         return
     thread_id = request.params["thread_id"]
@@ -327,35 +323,68 @@ def api_valid_post_id(request, **kwargs):
 
 
 @post.put(content_type=APP_JSON, schema=PostSchema,
-          validators=(valid_token, colander_body_validator))
+          validators=(valid_token, colander_body_validator,
+                      api_valid_thread_id))
 def create_post(request):
     """Create post."""
+    name = request.json_body['title']
+    article = request.json_body['body']
+    user = request.validated['user_db']
+    thread_obj = bb.get_thread(request.params["thread_id"])
     if not valid_permission(request, 'forum_reply'):
         request.errors.add('body', 'access_denied', 'Access denied')
         return
-
+    post_obj = bb.add_post(thread_obj, name, article, user)
+    return {"status": "created", "post_name": post_obj.name,
+            "post_content": post_obj.article,
+            "post_time": str(post_obj.time),
+            "post_username": post_obj.user.name,
+            "post_id": post_obj.id}
 
 @post.get(validators=api_valid_post_id)
 def read_post(request):
     """Read post."""
-    post = bb.get_post(request.params["post_id"])
-    return {"post_name": post.name,
-            "post_content": post.article,
-            "post_time": str(post.time),
-            "post_username": post.user.name,
-            "post_id": post.id}
+    post_obj = bb.get_post(request.params["post_id"])
+    return {"post_name": post_obj.name,
+            "post_content": post_obj.article,
+            "post_time": str(post_obj.time),
+            "post_username": post_obj.user.name,
+            "post_id": post_obj.id}
 
 
 @post.patch(content_type=APP_JSON, schema=PostSchema,
-            validators=(valid_token, colander_body_validator))
+            validators=(valid_token, colander_body_validator,
+                        api_valid_post_id))
 def update_post(request):
     """Update post."""
+    user = request.validated['user_db']
+    post_obj = bb.get_post(request.params["post_id"])
     if not valid_permission(request, 'forum_edit'):
         request.errors.add('body', 'access_denied', 'Access denied')
         return
+    if not (valid_permission(request, 'forum_mod_edit') or
+            post_obj.user == user):
+        request.errors.add('body', 'access_denied', 'Access denied')
+        return
+    post_obj.name = request.json_body['title']
+    post_obj.article = request.json_body['body']
+    return {"status": "updated", "post_name": post_obj.name,
+            "post_content": post_obj.article,
+            "post_time": str(post_obj.time),
+            "post_username": post_obj.user.name,
+            "post_id": post_obj.id}
 
-
-@post.delete(validators=valid_token)
+@post.delete(validators=(valid_token, api_valid_post_id))
 def delete_post(request):
     """Delete post."""
-    pass
+    post_obj = bb.get_post(request.params["post_id"])
+    if not (valid_permission(request, 'forum_delete') and
+            valid_permission(request, 'forum_mod_edit')):
+        request.errors.add('body', 'access_denied', 'Access denied')
+        return
+    what_id = bb.delete_post(post_obj)
+    if what_id == 1:
+        what = "post"
+    else:
+        what = "thread"
+    return {"status": "deleted", "what": what, "what_id": what_id}
